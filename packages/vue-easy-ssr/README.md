@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="./docs/public/logo.png" width="200" alt="Vue Easy SSR Logo">
+  <img src="./assets/logo.png" width="200" alt="Vue Easy SSR Logo">
 </p>
 
-# Vue Easy SSR
+# 🚀 Vue Easy SSR
 
 > Enable Server-Side Rendering (SSR) for Vue 3 in under 5 minutes.
 > **Zero Config. Native Vite. Production Ready.**
@@ -82,37 +82,65 @@ Use standard Vite commands.
 
 ---
 
-## 🚀 Quick Commands
+## 🚀 Development & Build
 
-| Command                      | Action                                         |
-| ---------------------------- | ---------------------------------------------- |
-| `pnpm dev`                   | Start Dev Server (SSR + HMR)                   |
-| `pnpm build`                 | Build Client, Server, and generate Node server |
-| `node dist/server/server.js` | Run Production Server                          |
-
----
-
-## 📖 Documentation
-
-See the [docs](./docs) folder for complete documentation:
-
-- [Getting Started](./docs/getting-started.md)
-- [Deployment Guide](./docs/deployment.md)
-
-## 🎮 Demo
-
-Check out the [demo app](./playground/demo-basic) for a complete example.
+### Development
 
 ```bash
-# Clone and run
-git clone https://github.com/ducdev2k1/vue-easy-ssr
-cd vue-easy-ssr
-pnpm install
-pnpm build:plugin
-cd playground/demo-basic
 pnpm dev
 ```
 
+Starts Vite dev server with SSR middleware. HMR enabled.
+
+### Production Build
+
+```bash
+pnpm build
+```
+
+Automatically orchestrates:
+
+1. **Client Build** (`dist/client`)
+2. **Server Build** (`dist/server`)
+3. **Server Gen**: Creates `dist/server/server.js`
+
+### Run Production
+
+```bash
+node dist/server/server.js
+```
+
+Starts the production server at `http://localhost:3000`.
+
+---
+
+## 🧩 API Reference
+
+### `defineEasySSR(options)`
+
+Main entry point.
+
+- `app`: Root Vue component.
+- `router`: Router factory function.
+- `pinia`: (Optional) Pinia factory function.
+- `el`: (Optional) Mount selector (default: `#app`).
+
+### `useAsyncData(key, fetcher)`
+
+Fetch data on server, dehydrate to client.
+
+```ts
+const { data, pending, error } = await useAsyncData("users", () =>
+  fetch("/api/users")
+);
+```
+
+### `useHead(config)`
+
+Manage head tags (title, meta, etc.). Powered by `@vueuse/head`.
+
+---
+
 ## 📄 License
 
-MIT © Nguyễn Đăng Đức
+MIT

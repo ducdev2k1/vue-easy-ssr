@@ -1,27 +1,19 @@
 # defineEasySSR
 
-The main configuration API for Vue Easy SSR. This function creates an SSR instance that provides methods for both client and server rendering.
+The main configuration API for Vue Easy SSR. Use this function in your `main.ts` to define your application structure.
 
 ## Usage
 
 ```ts
-import { createSSRApp } from "vue";
-import { createPinia } from "pinia";
 import { defineEasySSR } from "vue-easy-ssr";
+import { createPinia } from "pinia";
 import App from "./App.vue";
 import { createRouter } from "./router";
 
-export const ssr = defineEasySSR({
-  createApp: () => {
-    const app = createSSRApp(App);
-    const router = createRouter();
-    const pinia = createPinia();
-
-    app.use(router);
-    app.use(pinia);
-
-    return { app, router, pinia };
-  },
+export default defineEasySSR({
+  app: App,
+  router: createRouter,
+  pinia: createPinia, // Optional
 });
 ```
 
@@ -29,74 +21,16 @@ export const ssr = defineEasySSR({
 
 ### `IEasySSROptions`
 
-| Property    | Type                     | Required | Description                                                    |
-| ----------- | ------------------------ | -------- | -------------------------------------------------------------- |
-| `createApp` | `() => ICreateAppReturn` | ✅       | Factory function that creates and returns the Vue app instance |
+| Property | Type           | Required | Description                                         |
+| -------- | -------------- | -------- | --------------------------------------------------- |
+| `app`    | `Component`    | ✅       | The root Vue component (e.g. `App.vue`)             |
+| `router` | `() => Router` | ✅       | Factory function that returns a Vue Router instance |
+| `pinia`  | `() => Pinia`  | ❌       | Factory function that returns a Pinia instance      |
+| `el`     | `string`       | ❌       | Mount selector (default: `#app`)                    |
 
-### `ICreateAppReturn`
+## Internal Behavior
 
-| Property | Type           | Required | Description                                                |
-| -------- | -------------- | -------- | ---------------------------------------------------------- |
-| `app`    | `App<Element>` | ✅       | The Vue application instance (created with `createSSRApp`) |
-| `router` | `Router`       | ✅       | The Vue Router instance                                    |
-| `pinia`  | `Pinia`        | ❌       | Optional Pinia store instance                              |
+`defineEasySSR` returns an internal instance used by the `vue-easy-ssr` Vite plugin. You generally don't need to interact with the return value directly.
 
-## Return Value
-
-### `IEasySSRInstance`
-
-```ts
-interface IEasySSRInstance {
-  createClientApp(): Promise<ICreateAppReturn>;
-  createServerApp(
-    url: string
-  ): Promise<ICreateAppReturn & { ctx: ISSRContext }>;
-}
-```
-
-| Method                 | Description                                                                                       |
-| ---------------------- | ------------------------------------------------------------------------------------------------- |
-| `createClientApp()`    | Creates the app for client-side hydration. Restores initial state from `window.__INITIAL_STATE__` |
-| `createServerApp(url)` | Creates the app for server-side rendering. Navigates to the given URL and creates the SSR context |
-
-## Example: Entry Files
-
-### entry-client.ts
-
-```ts
-import { ssr } from "./main";
-
-async function bootstrap() {
-  const { app, router } = await ssr.createClientApp();
-
-  // Wait for router to be ready
-  await router.isReady();
-
-  // Mount the app
-  app.mount("#app");
-}
-
-bootstrap();
-```
-
-### entry-server.ts
-
-```ts
-import { ssr } from "./main";
-import { renderToString, generateHtml } from "vue-easy-ssr/server";
-
-export async function render(url: string, template: string): Promise<string> {
-  const { app, router, ctx } = await ssr.createServerApp(url);
-
-  await router.isReady();
-
-  const result = await renderToString(app, ctx);
-  return generateHtml(template, result);
-}
-```
-
-## TypeScript
-
-```ts
-import type { IEasySSROptions, IEasySSRInstance } from "vue-easy-ssr";
-```
+- **Client Side**: Automatically creating the app, restoring state from `window.__INITIAL_STATE__`, and mounting it.
+- **Server Side**: Automatically creating the app, handling routing, and managing SSR context.

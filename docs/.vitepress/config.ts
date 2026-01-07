@@ -8,13 +8,14 @@ export default defineConfig({
   appearance: "dark",
 
   head: [
-    ["meta", { name: "theme-color", content: "#667eea" }],
+    ["link", { rel: "icon", href: "/favicon.png" }],
+    ["meta", { name: "theme-color", content: "#42b883" }],
     ["meta", { name: "og:type", content: "website" }],
     ["meta", { name: "og:site_name", content: "Vue Easy SSR" }],
   ],
 
   themeConfig: {
-    logo: "/logo.svg",
+    logo: "/logo.png",
 
     nav: [
       { text: "Guide", link: "/getting-started" },
@@ -50,7 +51,7 @@ export default defineConfig({
 
     footer: {
       message: "Released under the MIT License.",
-      copyright: "Copyright © 2024 Nguyễn Đăng Đức",
+      copyright: "Copyright © 2026 Nguyễn Đăng Đức",
     },
 
     search: {

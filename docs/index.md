@@ -3,7 +3,7 @@ layout: home
 
 hero:
   name: Vue Easy SSR
-  text: SSR in 15 Minutes
+  text: Zero-Config SSR
   tagline: The simplest way to add Server-Side Rendering to your Vue 3 + Vite application
   actions:
     - theme: brand
@@ -14,12 +14,12 @@ hero:
       link: https://github.com/ducdev2k1/vue-easy-ssr
 
 features:
-  - icon: 🎯
-    title: Simple API
-    details: Just use defineEasySSR() to configure your app. No complex setup required.
+  - icon: ✨
+    title: Zero Config
+    details: No manual server file. No entry files. Just add the Vite plugin and go.
   - icon: ⚡
-    title: Vite Plugin
-    details: Seamless integration with Vite for the best development experience.
+    title: Native Vite
+    details: Works seamlessly with 'vite dev' and 'vite build'.
   - icon: 📡
     title: useAsyncData
     details: Server-side data fetching with automatic client hydration.
@@ -29,34 +29,33 @@ features:
   - icon: 📦
     title: Framework Agnostic
     details: Works with Vuetify, Element Plus, PrimeVue and more.
-  - icon: 🪶
-    title: Lightweight
-    details: Minimal dependencies, no magic, just works.
+  - icon: 🚀
+    title: Production Ready
+    details: Auto-generates an Express server ready for deployment.
 ---
 
 ## Quick Example
 
 ```ts
+// src/main.ts
 import { defineEasySSR } from "vue-easy-ssr";
+import { createPinia } from "pinia";
+import App from "./App.vue";
+import { createRouter } from "./router";
 
-export const ssr = defineEasySSR({
-  createApp: () => {
-    const app = createSSRApp(App);
-    const router = createRouter();
-    const pinia = createPinia();
-
-    app.use(router).use(pinia);
-    return { app, router, pinia };
-  },
+export default defineEasySSR({
+  app: App,
+  router: createRouter,
+  pinia: createPinia,
 });
 ```
 
 ## Why Vue Easy SSR?
 
-| Feature        | Vue Easy SSR      | Nuxt                |
-| -------------- | ----------------- | ------------------- |
-| Setup Time     | ~15 minutes       | Hours               |
-| Learning Curve | Minimal           | Steep               |
-| Existing SPA   | ✅ Easy migration | ❌ Requires rewrite |
-| Bundle Size    | ~5KB              | ~100KB+             |
-| SSR Control    | Full control      | Abstracted          |
+| Feature          | Vue Easy SSR      | Nuxt                | Manual SSR Setup     |
+| ---------------- | ----------------- | ------------------- | -------------------- |
+| **Setup**        | **Instant**       | Hours               | Days                 |
+| **Config**       | **Zero**          | High                | Very High            |
+| **Existing SPA** | ✅ Easy migration | ❌ Requires rewrite | ⚠️ Complex migration |
+| **Bundle Size**  | ~5KB              | ~100KB+             | Varies               |
+| **Control**      | Full control      | Abstracted          | Full control         |

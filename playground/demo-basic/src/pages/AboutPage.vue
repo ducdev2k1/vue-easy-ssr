@@ -27,7 +27,7 @@ useHead({
       <p>
         Vue Easy SSR is a lightweight, zero-config SSR solution for Vue 3
         applications. It enables you to add Server-Side Rendering to your
-        existing Vue 3 + Vite SPA in under 15 minutes.
+        existing Vue 3 + Vite SPA instantly.
       </p>
     </section>
 

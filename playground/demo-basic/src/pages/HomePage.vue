@@ -56,8 +56,8 @@ const {
         Vue Easy SSR
       </h1>
       <p class="p-home__subtitle">
-        Enable Server-Side Rendering in under
-        <strong>15 minutes</strong>
+        Zero-Config SSR. Native Vite.
+        <strong>Production Ready.</strong>
       </p>
       <div class="p-home__badges">
         <span class="p-home__badge p-home__badge--success">
@@ -83,19 +83,27 @@ const {
     <!-- Features -->
     <section class="p-home__features">
       <div class="p-home__feature">
+        <div class="p-home__feature-icon">✨</div>
+        <h3>Zero Configuration</h3>
+        <p>
+          No entry files. No manual server. Just add the Vite plugin and go.
+        </p>
+      </div>
+      <div class="p-home__feature">
         <div class="p-home__feature-icon">⚡</div>
-        <h3>Fast Setup</h3>
-        <p>Add SSR to existing Vue 3 apps with minimal configuration</p>
+        <h3>Native Vite</h3>
+        <p>
+          Works with standard <code>vite dev</code> and
+          <code>vite build</code> commands.
+        </p>
       </div>
       <div class="p-home__feature">
-        <div class="p-home__feature-icon">🎯</div>
-        <h3>SEO Optimized</h3>
-        <p>Meta tags rendered in HTML source for search engines</p>
-      </div>
-      <div class="p-home__feature">
-        <div class="p-home__feature-icon">📦</div>
-        <h3>Framework Agnostic</h3>
-        <p>Works with Vuetify, Element Plus, and more</p>
+        <div class="p-home__feature-icon">🔋</div>
+        <h3>Batteries Included</h3>
+        <p>
+          Built-in <code>useAsyncData</code> and <code>useHead</code> for full
+          SEO support.
+        </p>
       </div>
     </section>
 

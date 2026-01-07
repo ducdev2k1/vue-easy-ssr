@@ -6,85 +6,75 @@
 # Install the package
 pnpm add vue-easy-ssr
 
-# Peer dependencies (if not already installed)
+# Peer dependencies
 pnpm add vue vue-router pinia
 ```
 
 ## Quick Setup
 
-### 1. Update your main.ts
+### 1. Update your `src/main.ts`
+
+Use `defineEasySSR` to export your app factory.
 
 ```ts
-// src/main.ts
-import { createSSRApp } from "vue";
-import { createPinia } from "pinia";
 import { defineEasySSR } from "vue-easy-ssr";
+import { createPinia } from "pinia";
 import App from "./App.vue";
 import { createRouter } from "./router";
 
-export const ssr = defineEasySSR({
-  createApp: () => {
-    const app = createSSRApp(App);
-    const router = createRouter();
-    const pinia = createPinia();
-
-    app.use(router);
-    app.use(pinia);
-
-    return { app, router, pinia };
-  },
+export default defineEasySSR({
+  app: App,
+  router: createRouter,
+  pinia: createPinia,
 });
 ```
 
-### 2. Create entry-client.ts
+### 2. Configure `vite.config.ts`
+
+Add the `vueEasySSR` plugin.
 
 ```ts
-// src/entry-client.ts
-import { ssr } from "./main";
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import { vueEasySSR } from "vue-easy-ssr/vite";
 
-async function bootstrap() {
-  const { app, router } = await ssr.createClientApp();
-  await router.isReady();
-  app.mount("#app");
-}
-
-bootstrap();
+export default defineConfig({
+  plugins: [vue(), vueEasySSR()],
+});
 ```
 
-### 3. Create entry-server.ts
+### 3. Add Scripts
 
-```ts
-// src/entry-server.ts
-import { ssr } from "./main";
-import { renderToString, generateHtml } from "vue-easy-ssr/server";
+Standard Vite commands work out of the box.
 
-export async function render(url: string, template: string): Promise<string> {
-  const { app, router, ctx } = await ssr.createServerApp(url);
-  await router.isReady();
-  const result = await renderToString(app, ctx);
-  return generateHtml(template, result);
+```json
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "node dist/server/server.js"
+  }
 }
 ```
 
-### 4. Update index.html
+## Running the App
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  </head>
-  <body>
-    <div id="app"><!--ssr-outlet--></div>
-    <script type="module" src="/src/entry-client.ts"></script>
-  </body>
-</html>
+### Development
+
+```bash
+pnpm dev
 ```
 
-### 5. Create SSR server
+Starts the Vite development server with SSR middleware enabled.
 
-See the [server.js example](../playground/demo-basic/server.js) for a complete Express SSR server.
+### Production
+
+```bash
+pnpm build
+pnpm start
+```
+
+`pnpm build` automatically builds both client and server bundles, and generates a production `server.js` file.
 
 ## Next Steps
 
