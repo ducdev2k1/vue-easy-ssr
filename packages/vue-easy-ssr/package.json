@@ -1,7 +1,7 @@
 {
   "name": "vue-easy-ssr",
-  "version": "0.1.0",
-  "description": "Easy SSR for Vue 3 applications - Enable SSR in under 15 minutes",
+  "version": "0.2.0",
+  "description": "Zero-Config SSR for Vue 3 - Build once, deploy, run immediately",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -12,15 +12,20 @@
       "require": "./dist/index.cjs",
       "types": "./dist/types/index.d.ts"
     },
+    "./vite": {
+      "import": "./dist/vite.mjs",
+      "require": "./dist/vite.cjs",
+      "types": "./dist/types/vite/plugin.d.ts"
+    },
     "./server": {
       "import": "./dist/server.mjs",
       "require": "./dist/server.cjs",
-      "types": "./dist/types/server.d.ts"
+      "types": "./dist/types/server/index.d.ts"
     },
     "./client": {
       "import": "./dist/client.mjs",
       "require": "./dist/client.cjs",
-      "types": "./dist/types/client.d.ts"
+      "types": "./dist/types/client/index.d.ts"
     }
   },
   "files": [
@@ -37,6 +42,7 @@
   "peerDependencies": {
     "vue": "^3.4.0",
     "vue-router": "^4.2.0",
+    "vite": "^5.0.0 || ^6.0.0",
     "pinia": "^2.1.0"
   },
   "peerDependenciesMeta": {
@@ -58,7 +64,8 @@
     "ssr",
     "server-side-rendering",
     "vite",
-    "seo"
+    "seo",
+    "zero-config"
   ],
   "author": "Nguyễn Đăng Đức",
   "license": "MIT",

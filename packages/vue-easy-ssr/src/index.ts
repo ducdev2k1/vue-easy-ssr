@@ -1,8 +1,8 @@
 /**
  * vue-easy-ssr
  *
- * Easy SSR for Vue 3 applications.
- * Enable Server-Side Rendering in under 15 minutes.
+ * Zero-Config SSR for Vue 3 applications.
+ * Build once → Deploy → Run immediately.
  *
  * @packageDocumentation
  */
@@ -23,9 +23,10 @@ export type {
   IAsyncDataReturn,
   IEasySSROptions,
   IHeadConfig,
+  IPluginOptions,
   ISSRContext,
   ISSRRenderResult,
 } from "./types";
 
 // Context utilities (for advanced usage)
-export { SSR_CONTEXT_KEY, createSSRContext } from "./core/context";
+export { createSSRContext, SSR_CONTEXT_KEY } from "./core/context";

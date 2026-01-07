@@ -1,34 +1,34 @@
 /**
- * Main app factory
+ * Main App Entry - Zero-Config SSR
  *
- * Shared logic để tạo Vue app cho cả client và server.
- * Sử dụng defineEasySSR từ vue-easy-ssr.
+ * Với vue-easy-ssr mới, chỉ cần 1 file này.
+ * Plugin tự động generate entry-client và entry-server.
  */
 
 import { createPinia } from "pinia";
-import { createSSRApp } from "vue";
 import { defineEasySSR } from "vue-easy-ssr";
 import App from "./App.vue";
 import { createRouter } from "./router";
 
 /**
- * SSR instance được export để sử dụng trong entry-client và entry-server
+ * Zero-config SSR instance
+ * Plugin sẽ tự động:
+ * - Generate entry-client (hydration)
+ * - Generate entry-server (SSR render)
+ * - Configure Vite SSR
  */
-export const ssr = defineEasySSR({
-  createApp: () => {
-    // Create Vue app với SSR mode
-    const app = createSSRApp(App);
+export default defineEasySSR({
+  // Root component
+  app: App,
 
-    // Create router instance mới cho mỗi request
-    const router = createRouter();
+  // Router factory - called fresh for each SSR request
+  router: createRouter,
 
-    // Create Pinia instance mới cho mỗi request
-    const pinia = createPinia();
+  // Pinia factory - called fresh for each SSR request
+  pinia: createPinia,
 
-    // Install plugins
-    app.use(router);
-    app.use(pinia);
-
-    return { app, router, pinia };
+  // Global head config (optional)
+  head: {
+    titleTemplate: "%s | Vue Easy SSR",
   },
 });

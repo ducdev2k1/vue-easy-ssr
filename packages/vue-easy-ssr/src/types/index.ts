@@ -1,5 +1,5 @@
 import type { Pinia } from "pinia";
-import type { App } from "vue";
+import type { Component } from "vue";
 import type { Router } from "vue-router";
 
 /**
@@ -28,7 +28,7 @@ export interface ISSRContext {
  */
 export interface IHeadConfig {
   title?: string;
-  titleTemplate?: string;
+  titleTemplate?: string | ((title: string) => string);
   meta?: Array<{
     name?: string;
     property?: string;
@@ -38,24 +38,45 @@ export interface IHeadConfig {
     rel: string;
     href: string;
   }>;
+  script?: Array<{
+    src?: string;
+    innerHTML?: string;
+    type?: string;
+  }>;
 }
 
 /**
- * Options for defineEasySSR
- * Cấu hình chính cho vue-easy-ssr
+ * NEW: Simplified options for defineEasySSR (Zero-Config API)
+ * User chỉ cần pass component và factory functions
  */
 export interface IEasySSROptions {
-  // Function to create the Vue app
+  /** Root Vue component */
+  app: Component;
+
+  /** Router factory - được gọi mới cho mỗi request */
+  router: () => Router;
+
+  /** Optional Pinia factory - được gọi mới cho mỗi request */
+  pinia?: () => Pinia;
+
+  /** Optional global head config */
+  head?: IHeadConfig;
+
+  /** Mount element selector (default: '#app') */
+  el?: string;
+}
+
+/**
+ * LEGACY: Options for old defineEasySSR API (backward compatibility)
+ * @deprecated Use new simplified API instead
+ */
+export interface IEasySSROptionsLegacy {
   createApp: () => {
-    app: App;
+    app: import("vue").App;
     router: Router;
     pinia?: Pinia;
   };
-
-  // Base URL for the app
   baseUrl?: string;
-
-  // Transform HTML before sending to client
   transformHtml?: (html: string, ctx: ISSRContext) => string | Promise<string>;
 }
 
@@ -101,4 +122,21 @@ export interface IAsyncDataReturn<T> {
 export interface ISSRRenderResult {
   html: string;
   ctx: ISSRContext;
+}
+
+/**
+ * Vite Plugin Options
+ */
+export interface IPluginOptions {
+  /** Path to main.ts (auto-detected if not specified) */
+  entry?: string;
+
+  /** SSR entry path override */
+  ssrEntry?: string;
+
+  /** Output directory for build */
+  outDir?: string;
+
+  /** Mount element selector (default: '#app') */
+  el?: string;
 }

@@ -1,27 +1,38 @@
+import { createHead } from "@vueuse/head";
 import type { Pinia } from "pinia";
-import type { App } from "vue";
+import type { App, Component } from "vue";
+import { createSSRApp } from "vue";
 import type { Router } from "vue-router";
-import type { IEasySSROptions, ISSRContext } from "../types";
-import { SSR_CONTEXT_KEY } from "./context";
+import { renderToString as vueRenderToString } from "vue/server-renderer";
+import type { IEasySSROptions, ISSRContext, ISSRRenderResult } from "../types";
+import { SSR_CONTEXT_KEY, createSSRContext } from "./context";
 
 /**
- * Return type của defineEasySSR
+ * Internal interface - used by Vite plugin
+ * Không export ra ngoài
+ */
+interface IEasySSRInternal {
+  /** Client-side hydration */
+  _hydrate(el?: string): Promise<void>;
+
+  /** Server-side rendering */
+  _render(url: string): Promise<ISSRRenderResult>;
+
+  /** Access to options */
+  _options: IEasySSROptions;
+}
+
+/**
+ * Legacy interface để backward compatible
+ * @deprecated Use new simplified API
  */
 export interface IEasySSRInstance {
-  /**
-   * Create app for client-side (hydration)
-   * Tạo app cho client để hydrate
-   */
   createClientApp: () => Promise<{
     app: App;
     router: Router;
     pinia?: Pinia;
   }>;
 
-  /**
-   * Create app for server-side rendering
-   * Tạo app cho server để render
-   */
   createServerApp: (url: string) => Promise<{
     app: App;
     router: Router;
@@ -31,45 +42,67 @@ export interface IEasySSRInstance {
 }
 
 /**
- * defineEasySSR - Main API for vue-easy-ssr
+ * defineEasySSR - Zero-Config SSR for Vue 3
  *
- * Entry point chính để cấu hình SSR cho Vue app.
- * Cung cấp các factory functions để tạo app cho cả client và server.
+ * New simplified API - user just passes component and factory functions.
+ * Plugin handles entry file generation automatically.
  *
  * @example
  * ```ts
  * // main.ts
- * import { defineEasySSR } from 'vue-easy-ssr'
- * import App from './App.vue'
- * import { createRouter } from './router'
- * import { createPinia } from 'pinia'
+ * import { defineEasySSR } from 'vue-easy-ssr';
+ * import App from './App.vue';
+ * import { createRouter } from './router';
+ * import { createPinia } from 'pinia';
  *
- * export const ssr = defineEasySSR({
- *   createApp: () => {
- *     const app = createSSRApp(App)
- *     const router = createRouter()
- *     const pinia = createPinia()
- *
- *     app.use(router)
- *     app.use(pinia)
- *
- *     return { app, router, pinia }
- *   }
- * })
+ * export default defineEasySSR({
+ *   app: App,
+ *   router: createRouter,
+ *   pinia: createPinia,
+ * });
  * ```
  */
-export const defineEasySSR = (options: IEasySSROptions): IEasySSRInstance => {
-  const { createApp: userCreateApp } = options;
+export function defineEasySSR(
+  options: IEasySSROptions
+): IEasySSRInternal & IEasySSRInstance {
+  const {
+    app: AppComponent,
+    router: createRouter,
+    pinia: createPinia,
+    head: globalHead,
+    el = "#app",
+  } = options;
+
+  /**
+   * Internal factory to create app instance
+   * Called fresh for each SSR request or once on client
+   */
+  function createAppInstance() {
+    const app = createSSRApp(AppComponent as Component);
+    const router = createRouter();
+    const pinia = createPinia?.();
+    const head = createHead();
+
+    // Install plugins
+    app.use(router);
+    if (pinia) app.use(pinia);
+    app.use(head);
+
+    return { app, router, pinia, head };
+  }
 
   return {
-    /**
-     * Create app for client-side hydration
-     * Được gọi từ entry-client.ts
-     */
-    createClientApp: async () => {
-      const { app, router, pinia } = userCreateApp();
+    // Store options for plugin access
+    _options: options,
 
-      // Hydrate Pinia state từ window.__INITIAL_STATE__
+    /**
+     * Client-side hydration
+     * Called by virtual:vue-easy-ssr/entry-client
+     */
+    async _hydrate(mountEl?: string) {
+      const { app, router, pinia } = createAppInstance();
+
+      // Hydrate Pinia state from window.__INITIAL_STATE__
       if (pinia && typeof window !== "undefined") {
         const initialState = (
           window as Window & {
@@ -82,41 +115,91 @@ export const defineEasySSR = (options: IEasySSROptions): IEasySSRInstance => {
         }
       }
 
-      // Wait for router to be ready
+      // Wait for router
       await router.isReady();
 
+      // Mount app
+      app.mount(mountEl || el);
+    },
+
+    /**
+     * Server-side rendering
+     * Called by virtual:vue-easy-ssr/entry-server
+     */
+    async _render(url: string): Promise<ISSRRenderResult> {
+      const { app, router, pinia, head } = createAppInstance();
+
+      // Create SSR context
+      const ctx = createSSRContext(url);
+      ctx.head = head;
+
+      // Provide context to app
+      app.provide(SSR_CONTEXT_KEY, ctx);
+
+      // Navigate to URL
+      await router.push(url);
+      await router.isReady();
+
+      // Check for 404
+      const matchedRoute = router.currentRoute.value.matched;
+      if (matchedRoute.length === 0) {
+        ctx.error = new Error("Page not found");
+      }
+
+      // Store Pinia state for hydration
+      if (pinia) {
+        ctx.piniaState = pinia.state.value as Record<string, unknown>;
+      }
+
+      // Render app to HTML
+      const html = await vueRenderToString(
+        app,
+        ctx as unknown as Record<string, unknown>
+      );
+
+      return { html, ctx };
+    },
+
+    // ========================================
+    // Legacy API (backward compatibility)
+    // ========================================
+
+    /**
+     * @deprecated Use new simplified API with Vite plugin
+     */
+    async createClientApp() {
+      const { app, router, pinia } = createAppInstance();
+
+      // Hydrate Pinia state
+      if (pinia && typeof window !== "undefined") {
+        const initialState = (
+          window as Window & {
+            __INITIAL_STATE__?: { piniaState?: Record<string, unknown> };
+          }
+        ).__INITIAL_STATE__;
+        if (initialState?.piniaState) {
+          pinia.state.value =
+            initialState.piniaState as typeof pinia.state.value;
+        }
+      }
+
+      await router.isReady();
       return { app, router, pinia };
     },
 
     /**
-     * Create app for server-side rendering
-     * Được gọi từ entry-server.ts cho mỗi request
+     * @deprecated Use new simplified API with Vite plugin
      */
-    createServerApp: async (url: string) => {
-      const { app, router, pinia } = userCreateApp();
+    async createServerApp(url: string) {
+      const { app, router, pinia, head } = createAppInstance();
 
-      // Create SSR context
-      const ctx: ISSRContext = {
-        asyncData: {},
-        head: {
-          title: "",
-          meta: [],
-          link: [],
-          script: [],
-        },
-        piniaState: undefined,
-        url,
-        error: null,
-      };
-
-      // Provide SSR context to the app
+      const ctx = createSSRContext(url);
+      ctx.head = head;
       app.provide(SSR_CONTEXT_KEY, ctx);
 
-      // Navigate to the requested URL
       await router.push(url);
       await router.isReady();
 
-      // Store Pinia state for hydration
       if (pinia) {
         ctx.piniaState = pinia.state.value as Record<string, unknown>;
       }
@@ -124,4 +207,6 @@ export const defineEasySSR = (options: IEasySSROptions): IEasySSRInstance => {
       return { app, router, pinia, ctx };
     },
   };
-};
+}
+
+export default defineEasySSR;
