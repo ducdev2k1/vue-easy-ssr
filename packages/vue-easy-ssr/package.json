@@ -1,0 +1,69 @@
+{
+  "name": "vue-easy-ssr",
+  "version": "0.1.0",
+  "description": "Easy SSR for Vue 3 applications - Enable SSR in under 15 minutes",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./server": {
+      "import": "./dist/server.mjs",
+      "require": "./dist/server.cjs",
+      "types": "./dist/types/server.d.ts"
+    },
+    "./client": {
+      "import": "./dist/client.mjs",
+      "require": "./dist/client.cjs",
+      "types": "./dist/types/client.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build && tsc --emitDeclarationOnly --outDir dist/types",
+    "dev": "vite build --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@vueuse/head": "^2.0.0"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.0",
+    "vue-router": "^4.2.0",
+    "pinia": "^2.1.0"
+  },
+  "peerDependenciesMeta": {
+    "pinia": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.0",
+    "vue": "^3.5.0",
+    "vue-router": "^4.5.0",
+    "pinia": "^2.3.0"
+  },
+  "keywords": [
+    "vue",
+    "vue3",
+    "ssr",
+    "server-side-rendering",
+    "vite",
+    "seo"
+  ],
+  "author": "Nguyễn Đăng Đức",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ducdev2k1/vue-easy-ssr"
+  }
+}
