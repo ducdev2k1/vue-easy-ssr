@@ -77,7 +77,7 @@ export function defineEasySSR(
    * Internal factory to create app instance
    * Called fresh for each SSR request or once on client
    */
-  function createAppInstance() {
+  async function createAppInstance() {
     const app = createSSRApp(AppComponent as Component);
     const router = createRouter();
     const pinia = createPinia?.();
@@ -87,6 +87,11 @@ export function defineEasySSR(
     app.use(router);
     if (pinia) app.use(pinia);
     app.use(head);
+
+    // Call setup hook for additional plugins (Vuetify, i18n, etc.)
+    if (options.setup) {
+      await options.setup(app);
+    }
 
     return { app, router, pinia, head };
   }
@@ -100,7 +105,7 @@ export function defineEasySSR(
      * Called by virtual:vue-easy-ssr/entry-client
      */
     async _hydrate(mountEl?: string) {
-      const { app, router, pinia } = createAppInstance();
+      const { app, router, pinia } = await createAppInstance();
 
       // Hydrate Pinia state from window.__INITIAL_STATE__
       if (pinia && typeof window !== "undefined") {
@@ -127,7 +132,7 @@ export function defineEasySSR(
      * Called by virtual:vue-easy-ssr/entry-server
      */
     async _render(url: string): Promise<ISSRRenderResult> {
-      const { app, router, pinia, head } = createAppInstance();
+      const { app, router, pinia, head } = await createAppInstance();
 
       // Create SSR context
       const ctx = createSSRContext(url);
@@ -168,7 +173,7 @@ export function defineEasySSR(
      * @deprecated Use new simplified API with Vite plugin
      */
     async createClientApp() {
-      const { app, router, pinia } = createAppInstance();
+      const { app, router, pinia } = await createAppInstance();
 
       // Hydrate Pinia state
       if (pinia && typeof window !== "undefined") {
@@ -191,7 +196,7 @@ export function defineEasySSR(
      * @deprecated Use new simplified API with Vite plugin
      */
     async createServerApp(url: string) {
-      const { app, router, pinia, head } = createAppInstance();
+      const { app, router, pinia, head } = await createAppInstance();
 
       const ctx = createSSRContext(url);
       ctx.head = head;

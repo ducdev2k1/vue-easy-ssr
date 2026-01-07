@@ -4,6 +4,7 @@
  * Description: Trang chủ demo useAsyncData và useHead - Dark Theme
  */
 import { useAsyncData, useHead } from "vue-easy-ssr";
+import { useI18n } from "vue-i18n";
 
 // SEO meta tags - rendered on server
 useHead({
@@ -44,10 +45,22 @@ const {
   },
   default: () => [],
 });
+
+const { t, locale } = useI18n();
+
+const toggleLang = () => {
+  locale.value = locale.value === "en" ? "vi" : "en";
+};
 </script>
 
 <template>
   <div class="p-home">
+    <div class="p-home__toolbar">
+      <button class="p-home__btn p-home__btn--secondary" @click="toggleLang">
+        🌐 {{ t("common.switchLang") }} ({{ locale.toUpperCase() }})
+      </button>
+    </div>
+
     <!-- Hero Section -->
     <section class="p-home__hero">
       <div class="p-home__hero-glow"></div>
@@ -56,8 +69,7 @@ const {
         Vue Easy SSR
       </h1>
       <p class="p-home__subtitle">
-        Zero-Config SSR. Native Vite.
-        <strong>Production Ready.</strong>
+        {{ t("home.subtitle") }}
       </p>
       <div class="p-home__badges">
         <span class="p-home__badge p-home__badge--success">
@@ -72,10 +84,10 @@ const {
           href="https://github.com/ducdev2k1/vue-easy-ssr"
           class="p-home__btn p-home__btn--primary"
         >
-          Get Started
+          {{ t("home.getStarted") }}
         </a>
         <a href="/about" class="p-home__btn p-home__btn--secondary">
-          Learn More
+          {{ t("home.learnMore") }}
         </a>
       </div>
     </section>

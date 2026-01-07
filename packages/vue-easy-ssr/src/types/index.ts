@@ -59,6 +59,9 @@ export interface IEasySSROptions {
   /** Optional Pinia factory - được gọi mới cho mỗi request */
   pinia?: () => Pinia;
 
+  /** Hook to install additional plugins (e.g. Vuetify, i18n) */
+  setup?: (app: import("vue").App) => void | Promise<void>;
+
   /** Optional global head config */
   head?: IHeadConfig;
 

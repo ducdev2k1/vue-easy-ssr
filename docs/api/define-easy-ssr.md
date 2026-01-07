@@ -21,12 +21,35 @@ export default defineEasySSR({
 
 ### `IEasySSROptions`
 
-| Property | Type           | Required | Description                                         |
-| -------- | -------------- | -------- | --------------------------------------------------- |
-| `app`    | `Component`    | ✅       | The root Vue component (e.g. `App.vue`)             |
-| `router` | `() => Router` | ✅       | Factory function that returns a Vue Router instance |
-| `pinia`  | `() => Pinia`  | ❌       | Factory function that returns a Pinia instance      |
-| `el`     | `string`       | ❌       | Mount selector (default: `#app`)                    |
+| Property | Type                    | Required | Description                                         |
+| -------- | ----------------------- | -------- | --------------------------------------------------- |
+| `app`    | `Component`             | ✅       | The root Vue component (e.g. `App.vue`)             |
+| `router` | `() => Router`          | ✅       | Factory function that returns a Vue Router instance |
+| `pinia`  | `() => Pinia`           | ❌       | Factory function that returns a Pinia instance      |
+| `setup`  | `(app) => void/Promise` | ❌       | Hook to install plugins (Vuetify, i18n, etc.)       |
+| `el`     | `string`                | ❌       | Mount selector (default: `#app`)                    |
+
+### Example: Using Plugins (Vuetify, i18n)
+
+```ts
+import { createVuetify } from 'vuetify';
+import { createI18n } from 'vue-i18n';
+
+export default defineEasySSR({
+  app: App,
+  router: createRouter,
+  pinia: createPinia,
+  setup(app) {
+    // Install Vuetify
+    const vuetify = createVuetify({ ssr: true });
+    app.use(vuetify);
+
+    // Install i18n
+    const i18n = createI18n({ ... });
+    app.use(i18n);
+  }
+});
+```
 
 ## Internal Behavior
 
